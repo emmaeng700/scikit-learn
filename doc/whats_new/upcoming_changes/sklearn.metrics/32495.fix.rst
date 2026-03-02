@@ -1,0 +1,5 @@
+- :func:`metrics.pairwise_distances_argmin` and
+  :func:`metrics.pairwise_distances_argmin_min` no longer emit a spurious
+  :class:`exceptions.DataConversionWarning` when the input arrays are already
+  of boolean dtype and a boolean metric (e.g. ``"jaccard"``) is used.
+  :issue:`32495` by :user:`Emmanuel Oppong <emmaeng700>`.
