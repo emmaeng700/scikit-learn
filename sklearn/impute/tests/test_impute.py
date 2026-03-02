@@ -1933,4 +1933,30 @@ def test_iterative_imputer_with_empty_features(strategy, X_test):
     assert_allclose(X_train_keep_empty_features[:, 0], 0)
 
     assert X_train_drop_empty_features.shape[1] == X_test_drop_empty_features.shape[1]
+
+
+def test_simple_imputer_inverse_transform_empty_feature_column_order():
+    """Regression test for gh-27012.
+
+    inverse_transform should preserve column order and restore empty features
+    (all-NaN during fit) to missing_values, not shift columns or corrupt data.
+    """
+    # Fit on data where first column is all-NaN (empty feature)
+    X_fit = np.array([[np.nan, 2.0, 3.0], [np.nan, 2.0, 3.0]])
+    X_trans = np.array([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+
+    imputer = SimpleImputer(add_indicator=True)
+    imputer.fit(X_fit)
+
+    X_transformed = imputer.transform(X_trans)
+    X_restored = imputer.inverse_transform(X_transformed)
+
+    # Column 0 was all-NaN during fit so must be restored to NaN
+    assert X_restored.shape == X_fit.shape
+    assert np.all(np.isnan(X_restored[:, 0])), (
+        "Empty feature column should be restored to NaN"
+    )
+    # Columns 1 and 2 must be in their original positions
+    np.testing.assert_array_equal(X_restored[:, 1], [2.0, 2.0])
+    np.testing.assert_array_equal(X_restored[:, 2], [3.0, 3.0])
     assert X_train_keep_empty_features.shape[1] == X_test_keep_empty_features.shape[1]

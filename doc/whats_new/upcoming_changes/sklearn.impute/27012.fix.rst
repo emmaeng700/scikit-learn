@@ -1,0 +1,5 @@
+- :meth:`impute.SimpleImputer.inverse_transform` now correctly preserves
+  column order and restores features that were all-missing during ``fit``
+  to ``missing_values``, instead of shifting columns or corrupting data
+  when ``add_indicator=True`` and ``keep_empty_features=False``.
+  By :user:`Emmanuel Oppong <emmaeng700>`.

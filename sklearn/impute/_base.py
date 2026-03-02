@@ -731,9 +731,16 @@ class SimpleImputer(_BaseImputer):
         X_original[:, self.indicator_.features_] = missing_mask
         full_mask = X_original.astype(bool)
 
+        # Features whose statistics are NaN were all-missing during fit and
+        # were dropped from the transform output when keep_empty_features=False.
+        # They must be skipped when consuming columns from array_imputed.
+        empty_features = set(np.flatnonzero(_get_mask(self.statistics_, np.nan)))
+
         imputed_idx, original_idx = 0, 0
-        while imputed_idx < len(array_imputed.T):
-            if not np.all(X_original[:, original_idx]):
+        while imputed_idx < len(array_imputed.T) and original_idx < n_features_original:
+            if original_idx in empty_features:
+                original_idx += 1
+            elif not np.all(X_original[:, original_idx]):
                 X_original[:, original_idx] = array_imputed.T[imputed_idx]
                 imputed_idx += 1
                 original_idx += 1
@@ -741,6 +748,9 @@ class SimpleImputer(_BaseImputer):
                 original_idx += 1
 
         X_original[full_mask] = self.missing_values
+        # Restore empty features (all-missing during fit) to missing_values
+        if empty_features:
+            X_original[:, list(empty_features)] = self.missing_values
         return X_original
 
     def __sklearn_tags__(self):
