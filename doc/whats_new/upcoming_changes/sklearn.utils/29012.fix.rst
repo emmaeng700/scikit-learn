@@ -1,0 +1,5 @@
+- :func:`utils.validation.check_array` now raises a :class:`ValueError` with
+  a clear message ("Input contains mixed types or inconsistent shapes") when
+  the input contains elements of different types or arrays of inconsistent
+  lengths, instead of propagating an opaque NumPy error.
+  By :user:`Emmanuel Oppong <emmaeng700>`.

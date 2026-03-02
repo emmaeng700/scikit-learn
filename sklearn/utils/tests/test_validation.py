@@ -842,6 +842,21 @@ def test_check_array_complex_data_error():
         _check_y(y)
 
 
+def test_check_array_mixed_type_clear_error():
+    # Regression test: check_array should raise a clear ValueError when input
+    # contains mixed types or inconsistent shapes, preserving the original
+    # NumPy error phrase so that downstream tests matching on it still pass.
+    # Lists of arrays with inconsistent lengths trigger "setting an array
+    # element with a sequence" from NumPy.
+    X = [np.array([1, 2, 3]), np.array([4, 5])]
+    with pytest.raises(ValueError, match="setting an array element with a sequence"):
+        check_array(X, ensure_2d=False)
+
+    # The enhanced message should also mention the helpful hint.
+    with pytest.raises(ValueError, match="mixed types or inconsistent shapes"):
+        check_array([np.array([1, 2]), np.array([3, 4, 5])], ensure_2d=False)
+
+
 def test_has_fit_parameter():
     assert not has_fit_parameter(KNeighborsClassifier, "sample_weight")
     assert has_fit_parameter(RandomForestRegressor, "sample_weight")
